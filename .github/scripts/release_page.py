@@ -5,6 +5,11 @@ Lives under .github/ because a Custom-skills Release replaces every other
 tracked file in this repo except README.md.
 """
 
+import re
+import sys
+
+TAG_SHAPE = re.compile(r"v[0-9]+\.[0-9]+\.[0-9]+")
+
 
 def release_note(tag):
     """Return the Markdown note for the release page of `tag`.
@@ -26,7 +31,17 @@ def release_note(tag):
 
     Pure: reads nothing, writes nothing, calls nothing outside this process.
     """
-    raise NotImplementedError
+    if not TAG_SHAPE.fullmatch(tag):
+        raise ValueError(f"tag {tag!r} is not shaped vX.Y.Z")
+    return (
+        f"[Custom-skills {tag} release notes]"
+        f"(https://github.com/Maxastrand04/Custom-skills/releases/tag/{tag})\n"
+        "\n"
+        "```sh\n"
+        "agy plugin install "
+        f"https://github.com/Maxastrand04/Custom-skills-agy/tree/{tag}\n"
+        "```\n"
+    )
 
 
 def main(argv):
@@ -42,10 +57,17 @@ def main(argv):
     stderr, when the tag is not shaped "vX.Y.Z" or argv does not hold exactly
     one argument.
     """
-    raise NotImplementedError
+    if len(argv) != 1:
+        print(f"expected exactly one tag, got {len(argv)} arguments", file=sys.stderr)
+        return 1
+    try:
+        note = release_note(argv[0])
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        return 1
+    print(note, end="")
+    return 0
 
 
 if __name__ == "__main__":
-    import sys
-
     sys.exit(main(sys.argv[1:]))

@@ -24,7 +24,18 @@ jobs:
   release-page:
     runs-on: ubuntu-latest
     steps:
-      - name: Not implemented
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Create the release page
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
         run: |
-          echo "Release page workflow not implemented yet."
-          exit 1
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "A release page for $TAG already exists. Leaving it as it is."
+            exit 0
+          fi
+          python3 .github/scripts/release_page.py "$TAG" > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
