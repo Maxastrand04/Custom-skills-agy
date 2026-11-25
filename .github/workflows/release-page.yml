@@ -32,10 +32,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
+          NOTES_FILE: ${{ runner.temp }}/notes.md
         run: |
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "A release page for $TAG already exists. Leaving it as it is."
             exit 0
           fi
-          python3 .github/scripts/release_page.py "$TAG" > "$RUNNER_TEMP/notes.md"
-          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
+          python3 .github/scripts/release_page.py "$TAG" > "$NOTES_FILE"
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$NOTES_FILE"

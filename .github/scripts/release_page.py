@@ -8,7 +8,9 @@ tracked file in this repo except README.md.
 import re
 import sys
 
-TAG_SHAPE = re.compile(r"v[0-9]+\.[0-9]+\.[0-9]+")
+_TAG_SHAPE = re.compile(r"v[0-9]+\.[0-9]+\.[0-9]+")
+_UPSTREAM_RELEASE_URL = "https://github.com/Maxastrand04/Custom-skills/releases/tag/"
+_AGY_TREE_URL = "https://github.com/Maxastrand04/Custom-skills-agy/tree/"
 
 
 def release_note(tag):
@@ -31,15 +33,13 @@ def release_note(tag):
 
     Pure: reads nothing, writes nothing, calls nothing outside this process.
     """
-    if not TAG_SHAPE.fullmatch(tag):
+    if not _TAG_SHAPE.fullmatch(tag):
         raise ValueError(f"tag {tag!r} is not shaped vX.Y.Z")
     return (
-        f"[Custom-skills {tag} release notes]"
-        f"(https://github.com/Maxastrand04/Custom-skills/releases/tag/{tag})\n"
+        f"[Custom-skills {tag} release notes]({_UPSTREAM_RELEASE_URL}{tag})\n"
         "\n"
         "```sh\n"
-        "agy plugin install "
-        f"https://github.com/Maxastrand04/Custom-skills-agy/tree/{tag}\n"
+        f"agy plugin install {_AGY_TREE_URL}{tag}\n"
         "```\n"
     )
 
