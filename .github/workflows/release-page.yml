@@ -1,0 +1,42 @@
+# Creates the release page for each vX.Y.Z tag a Custom-skills Release pushes.
+#
+# Starts on a pushed tag shaped exactly vX.Y.Z. The filter's "." is a literal
+# dot and "+" means one or more digits, so v1.2, 1.2.3, v1.2.3-rc1 and latest
+# start nothing.
+#
+# Creates the page with this run's own GITHUB_TOKEN, titled with the tag and
+# carrying the note from .github/scripts/release_page.py. When a page for the
+# tag already exists, it leaves that page untouched and the run succeeds.
+#
+# Never commits, pushes, moves or deletes a file or a tag in this repo. Its
+# only write is the release page.
+name: Release page
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release-page:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Create the release page
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          NOTES_FILE: ${{ runner.temp }}/notes.md
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "A release page for $TAG already exists. Leaving it as it is."
+            exit 0
+          fi
+          python3 .github/scripts/release_page.py "$TAG" > "$NOTES_FILE"
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$NOTES_FILE"
